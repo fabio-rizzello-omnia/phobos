@@ -45,8 +45,6 @@ object ElementDecoder extends ElementLiteralInstances with DerivedElement {
         Some(new FailedDecoder(c.error(s"Invalid local name. Expected '$localName', but found '${c.getLocalName}'")))
       case Some(uri) if uri != c.getNamespaceURI =>
         Some(new FailedDecoder(c.error(s"Invalid namespace. Expected '$uri', but found '${c.getNamespaceURI}'")))
-      case None if c.getNamespaceURI != "" =>
-        Some(new FailedDecoder(c.error(s"Invalid namespace. Expected no namespace, but found '${c.getNamespaceURI}'")))
       case _ => None
     }
   }
