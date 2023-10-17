@@ -1,6 +1,7 @@
 package ru.tinkoff.phobos.decoding
 
 import java.time._
+import java.time.format.DateTimeFormatter
 import java.util.{Base64, UUID}
 
 /** Warning! This is an internal API which may change in future. Do not implement or use this trait directly unless you
@@ -64,7 +65,7 @@ object AttributeDecoder extends AttributeLiteralInstances {
       string match {
         case "true" | "1"  => Right(true)
         case "false" | "0" => Right(false)
-        case str           => Left(DecodingError(s"Value `$str` is not `true` or `false`", history))
+        case str           => Left(DecodingError(s"Value `$str` is not `true` or `false`", history, None))
       },
     )
 
@@ -73,7 +74,7 @@ object AttributeDecoder extends AttributeLiteralInstances {
   implicit val charDecoder: AttributeDecoder[Char] =
     stringDecoder.emap((history, string) => {
       if (string.length != 1) {
-        Left(DecodingError("Value too long for char", history))
+        Left(DecodingError("Value too long for char", history, None))
       } else {
         Right(string.head)
       }
@@ -130,18 +131,39 @@ object AttributeDecoder extends AttributeLiteralInstances {
       ): Either[DecodingError, None.type] = Right(None)
     }
 
+  implicit val instantDecoder: AttributeDecoder[Instant] =
+    stringDecoder.emap(wrapException(Instant.parse))
+
+  def instantDecoderWithFormatter(formatter: DateTimeFormatter): AttributeDecoder[Instant] =
+    stringDecoder.emap(wrapException(string => Instant.from(formatter.parse(string))))
+
   implicit val localDateTimeDecoder: AttributeDecoder[LocalDateTime] =
     stringDecoder.emap(wrapException(LocalDateTime.parse))
+
+  def localDateTimeDecoderWithFormatter(formatter: DateTimeFormatter): AttributeDecoder[LocalDateTime] =
+    stringDecoder.emap(wrapException(LocalDateTime.parse(_, formatter)))
 
   implicit val zonedDateTimeDecoder: AttributeDecoder[ZonedDateTime] =
     stringDecoder.emap(wrapException(ZonedDateTime.parse))
 
+  def zonedDateTimeDecoderWithFormatter(formatter: DateTimeFormatter): AttributeDecoder[ZonedDateTime] =
+    stringDecoder.emap(wrapException(ZonedDateTime.parse(_, formatter)))
+
   implicit val offsetDateTimeDecoder: AttributeDecoder[OffsetDateTime] =
     stringDecoder.emap(wrapException(OffsetDateTime.parse))
+
+  def offsetDateTimeDecoderWithFormatter(formatter: DateTimeFormatter): AttributeDecoder[OffsetDateTime] =
+    stringDecoder.emap(wrapException(OffsetDateTime.parse(_, formatter)))
 
   implicit val localDateDecoder: AttributeDecoder[LocalDate] =
     stringDecoder.emap(wrapException(LocalDate.parse))
 
+  def localDateDecoderWithFormatter(formatter: DateTimeFormatter): AttributeDecoder[LocalDate] =
+    stringDecoder.emap(wrapException(LocalDate.parse(_, formatter)))
+
   implicit val localTimeDecoder: AttributeDecoder[LocalTime] =
     stringDecoder.emap(wrapException(LocalTime.parse))
+
+  def localTimeDecoderWithFormatter(formatter: DateTimeFormatter): AttributeDecoder[LocalTime] =
+    stringDecoder.emap(wrapException(LocalTime.parse(_, formatter)))
 }

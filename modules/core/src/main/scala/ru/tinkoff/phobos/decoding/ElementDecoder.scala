@@ -56,8 +56,8 @@ object ElementDecoder extends ElementLiteralInstances with DerivedElement {
 
   def decodingNotCompleteError(history: List[String]): DecodingError =
     history match {
-      case element :: others => DecodingError(s"Element '$element' is missing or invalid", others)
-      case Nil               => DecodingError("Root element is missing or invalid", Nil)
+      case element :: others => DecodingError(s"Element '$element' is missing or invalid", others, None)
+      case Nil               => DecodingError("Root element is missing or invalid", Nil, None)
     }
 
   final class MappedDecoder[A, B](fa: ElementDecoder[A], f: A => B) extends ElementDecoder[B] {
@@ -152,14 +152,14 @@ object ElementDecoder extends ElementLiteralInstances with DerivedElement {
 
   implicit val stringDecoder: ElementDecoder[String] = new StringDecoder()
 
-  implicit val unitDecoder: ElementDecoder[Unit] = new ConstDecoder[Unit](())
+  implicit val unitDecoder: ElementDecoder[Unit] = stringDecoder.map(_ => ())
 
   implicit val booleanDecoder: ElementDecoder[Boolean] =
     stringDecoder.emap((history, string) =>
       string match {
         case "true" | "1"  => Right(true)
         case "false" | "0" => Right(false)
-        case str           => Left(DecodingError(s"Value `$str` is not `true` or `false`", history))
+        case str           => Left(DecodingError(s"Value `$str` is not `true` or `false`", history, None))
       },
     )
 
@@ -168,7 +168,7 @@ object ElementDecoder extends ElementLiteralInstances with DerivedElement {
   implicit val charDecoder: ElementDecoder[Char] =
     stringDecoder.emap((history, string) => {
       if (string.length != 1) {
-        Left(DecodingError("Value too long for char", history))
+        Left(DecodingError("Value too long for char", history, None))
       } else {
         Right(string.head)
       }
@@ -202,7 +202,7 @@ object ElementDecoder extends ElementLiteralInstances with DerivedElement {
       def decodeAsElement(c: Cursor, localName: String, namespaceUri: Option[String]): ElementDecoder[Option[A]] = {
         if (c.isStartElement) {
           ElementDecoder.errorIfWrongName[Option[A]](c, localName, namespaceUri).getOrElse {
-            if (ElementDecoder.isNil(c) || (c.isEmptyElement && c.getAttributeInfo.getAttributeCount == 0)) {
+            if (ElementDecoder.isNil(c)) {
               c.next()
               new ConstDecoder(None)
             } else {
@@ -291,6 +291,12 @@ object ElementDecoder extends ElementLiteralInstances with DerivedElement {
 
   implicit def vectorDecoder[A](implicit decoder: ElementDecoder[A]): ElementDecoder[Vector[A]] =
     listDecoder[A].map(_.toVector)
+
+  implicit val instantDecoder: ElementDecoder[Instant] =
+    stringDecoder.emap(wrapException(Instant.parse))
+
+  def instantDecoderWithFormatter(formatter: DateTimeFormatter): ElementDecoder[Instant] =
+    stringDecoder.emap(wrapException(string => Instant.from(formatter.parse(string))))
 
   implicit val localDateTimeDecoder: ElementDecoder[LocalDateTime] =
     stringDecoder.emap(wrapException(LocalDateTime.parse))

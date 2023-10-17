@@ -2,14 +2,14 @@
 
 ThisBuild / name := "phobos"
 
-ThisBuild / scalaVersion := "3.1.2"
+ThisBuild / scalaVersion := "3.2.1"
 
 lazy val commonDependencies =
   libraryDependencies ++=
     List(
       "com.fasterxml"  % "aalto-xml" % "1.3.2",
-      "org.scalatest" %% "scalatest" % "3.2.12" % "test",
-      "org.scalactic" %% "scalactic" % "3.2.12" % "test",
+      "org.scalatest" %% "scalatest" % "3.2.16" % "test",
+      "org.scalactic" %% "scalactic" % "3.2.16" % "test",
     ) ++
       (CrossVersion.partialVersion(scalaVersion.value) match {
         case Some((2, 12)) => List(
@@ -44,8 +44,8 @@ def commonSettings(id: String) =
     )
   )
 
-lazy val scala2Versions = List("2.12.15", "2.13.8")
-lazy val scala3Versions = List("2.12.15", "2.13.8", "3.1.2")
+lazy val scala2Versions = List("2.12.18", "2.13.11")
+lazy val scala3Versions = List("2.12.18", "2.13.11", "3.3.0")
 
 lazy val `core` =
   (projectMatrix in file(s"modules/core"))
@@ -53,27 +53,14 @@ lazy val `core` =
     .settings(commonDependencies)
     .jvmPlatform(scala3Versions)
 
-lazy val `core-3-0` =
-  (projectMatrix in file(s"modules/core"))
-    .settings(commonSettings("core-3-0"))
-    .settings(
-      target := file("modules/core/target30"),
-      libraryDependencies ++= List(
-        "com.fasterxml"  % "aalto-xml" % "1.3.2",
-        "org.scalatest" %% "scalatest" % "3.2.11" % "test",
-        "org.scalactic" %% "scalactic" % "3.2.11" % "test",
-      )
-    )
-    .jvmPlatform(List("3.0.2"))
-
 lazy val `akka-http` =
   (projectMatrix in file(s"modules/akka-http"))
     .settings(commonSettings("akka-http"))
     .settings(
       commonDependencies,
       libraryDependencies ++= Seq(
-        "com.typesafe.akka" %% "akka-stream" % "2.6.19" % "provided",
-        "com.typesafe.akka" %% "akka-http"   % "10.2.9",
+        "com.typesafe.akka" %% "akka-stream" % "2.6.20" % "provided",
+        "com.typesafe.akka" %% "akka-http"   % "10.2.10",
       )
     )
     .jvmPlatform(scala2Versions)
@@ -85,8 +72,8 @@ lazy val `akka-stream`   =
     .settings(
       commonDependencies,
       libraryDependencies ++= Seq(
-        "com.typesafe.akka" %% "akka-stream"  % "2.6.19",
-        "com.typesafe.akka" %% "akka-testkit" % "2.6.19" % Test,
+        "com.typesafe.akka" %% "akka-stream"  % "2.6.20",
+        "com.typesafe.akka" %% "akka-testkit" % "2.6.20" % Test,
       )
     )
     .jvmPlatform(scala3Versions)
@@ -98,9 +85,9 @@ lazy val `ast` =
     .settings(
       commonDependencies,
       libraryDependencies ++= Seq(
-        "org.scalacheck"         %% "scalacheck"             % "1.16.0" % "test",
-        "com.softwaremill.diffx" %% "diffx-scalatest-should" % "0.7.1"  % "test",
-        "org.typelevel"          %% "cats-core"              % "2.7.0",
+        "org.scalacheck"         %% "scalacheck"             % "1.17.0" % "test",
+        "com.softwaremill.diffx" %% "diffx-scalatest-should" % "0.8.3"  % "test",
+        "org.typelevel"          %% "cats-core"              % "2.9.0",
       ),
       Test / testOptions += Tests.Argument(TestFrameworks.ScalaCheck, "-verbosity", "3"),
     )
@@ -113,7 +100,7 @@ lazy val `cats` =
     .settings(
       commonDependencies,
       libraryDependencies ++= Seq(
-        "org.typelevel" %% "cats-core" % "2.7.0",
+        "org.typelevel" %% "cats-core" % "2.9.0",
       ),
     )
     .jvmPlatform(scala3Versions)
@@ -137,7 +124,7 @@ lazy val `enumeratum` =
     .settings(
       commonDependencies,
       libraryDependencies ++= Seq(
-        "com.beachape" %% "enumeratum" % "1.7.0",
+        "com.beachape" %% "enumeratum" % "1.7.3",
       ),
     )
     .jvmPlatform(scala2Versions)
@@ -149,8 +136,8 @@ lazy val `fs2` =
     .settings(
       commonDependencies,
       libraryDependencies ++= Seq(
-        "co.fs2" %% "fs2-core" % "3.2.7",
-        "co.fs2" %% "fs2-io"   % "3.2.7" % "test",
+        "co.fs2" %% "fs2-core" % "3.7.0",
+        "co.fs2" %% "fs2-io"   % "3.7.0" % "test",
       ),
     )
     .jvmPlatform(scala3Versions)
@@ -187,7 +174,7 @@ lazy val `refined` =
     .settings(
       commonDependencies,
       libraryDependencies ++= Seq(
-        "eu.timepit" %% "refined" % "0.9.29",
+        "eu.timepit" %% "refined" % "0.11.0",
       ),
     )
     .jvmPlatform(scala2Versions)
@@ -196,7 +183,6 @@ lazy val `refined` =
 lazy val modules: Seq[ProjectReference] =
   Seq(
     `core`.projectRefs,
-    `core-3-0`.projectRefs,
     `akka-http`.projectRefs,
     `akka-stream`.projectRefs,
     `ast`.projectRefs,

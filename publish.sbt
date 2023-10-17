@@ -1,6 +1,6 @@
 import Publish._
 
-publishVersion := "0.15.1"
+publishVersion := "0.21.0"
 
 ThisBuild / organization := "ru.tinkoff"
 ThisBuild / version := {
